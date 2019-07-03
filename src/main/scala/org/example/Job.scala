@@ -45,15 +45,12 @@ import org.apache.flink.contrib.streaming.state.{PredefinedOptions, RocksDBState
 object Job {
   def main(args: Array[String]): Unit = {
     // set up the execution environment
-    val stateDir = "file:///tmp/lookalike-df/"
+    val stateDir = "file:///tmp/state/"
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     val b = new RocksDBStateBackend(stateDir,true)
     env.setStateBackend(b)
 
-    // get input data
-    val words = ("To be, or not to be,--that is the question:-- Whether 'tis nobler in the mind to suffer, " +
-      "The slings and arrows of outrageous fortune Or to take arms against a sea of troubles").toLowerCase.split(("\\W+")).toList
-    val text: DataStream[String] = env.fromElements(words: _*)
+    val text = env.socketTextStream("localhost", 9000)
 
     val counts = text
       .keyBy(w => w)
